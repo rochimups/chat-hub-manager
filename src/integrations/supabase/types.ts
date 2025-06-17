@@ -9,12 +9,106 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_contacts: {
+        Row: {
+          account_id: number | null
+          avatar: string | null
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_time: string | null
+          name: string
+          phone: string
+          unread_count: number | null
+        }
+        Insert: {
+          account_id?: number | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_time?: string | null
+          name: string
+          phone: string
+          unread_count?: number | null
+        }
+        Update: {
+          account_id?: number | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_time?: string | null
+          name?: string
+          phone?: string
+          unread_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_contacts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          account_id: number | null
+          created_at: string
+          from_phone: string | null
+          id: string
+          message: string
+          status: string
+          timestamp: string
+          to_phone: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: number | null
+          created_at?: string
+          from_phone?: string | null
+          id?: string
+          message: string
+          status?: string
+          timestamp?: string
+          to_phone: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: number | null
+          created_at?: string
+          from_phone?: string | null
+          id?: string
+          message?: string
+          status?: string
+          timestamp?: string
+          to_phone?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_accounts: {
         Row: {
           created_at: string | null
           id: number
+          is_active: boolean | null
+          last_seen: string | null
           name: string
           phone_number: string | null
+          qr_code: string | null
           status: string
           status_code: string | null
           updated_at: string | null
@@ -22,8 +116,11 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: number
+          is_active?: boolean | null
+          last_seen?: string | null
           name: string
           phone_number?: string | null
+          qr_code?: string | null
           status?: string
           status_code?: string | null
           updated_at?: string | null
@@ -31,8 +128,11 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: number
+          is_active?: boolean | null
+          last_seen?: string | null
           name?: string
           phone_number?: string | null
+          qr_code?: string | null
           status?: string
           status_code?: string | null
           updated_at?: string | null

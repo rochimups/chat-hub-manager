@@ -9,15 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface WhatsAppAccount {
-  id: string;
-  name: string;
-  phone: string;
-  status: 'connected' | 'disconnected' | 'pending' | 'scanning';
-  lastSeen: Date;
-  isActive: boolean;
-}
+import { WhatsAppAccount } from '@/hooks/useWhatsAppAccounts';
 
 interface AccountSelectorProps {
   accounts: WhatsAppAccount[];
@@ -35,6 +27,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({
       case 'connected':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'disconnected':
+      case 'not_connected':
         return <XCircle className="w-4 h-4 text-red-500" />;
       case 'pending':
       case 'scanning':
@@ -49,6 +42,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({
       case 'connected':
         return 'bg-green-100 text-green-800';
       case 'disconnected':
+      case 'not_connected':
         return 'bg-red-100 text-red-800';
       case 'pending':
       case 'scanning':
@@ -69,7 +63,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({
               <Badge className={getStatusColor(activeAccount.status)}>
                 <div className="flex items-center gap-1">
                   {getStatusIcon(activeAccount.status)}
-                  <span className="capitalize">{activeAccount.status}</span>
+                  <span className="capitalize">{activeAccount.status === 'not_connected' ? 'disconnected' : activeAccount.status}</span>
                 </div>
               </Badge>
             )}
@@ -90,13 +84,13 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({
               </div>
               <div>
                 <p className="font-medium">{account.name}</p>
-                <p className="text-sm text-gray-500">{account.phone || 'Not connected'}</p>
+                <p className="text-sm text-gray-500">{account.phone_number || 'Not connected'}</p>
               </div>
             </div>
             <Badge className={getStatusColor(account.status)}>
               <div className="flex items-center gap-1">
                 {getStatusIcon(account.status)}
-                <span className="capitalize">{account.status}</span>
+                <span className="capitalize">{account.status === 'not_connected' ? 'disconnected' : account.status}</span>
               </div>
             </Badge>
           </DropdownMenuItem>
