@@ -31,7 +31,12 @@ export const useWhatsAppAccounts = () => {
       }
 
       console.log('Fetched accounts:', data);
-      setAccounts(data || []);
+      // Cast the data to match our interface
+      const typedAccounts: WhatsAppAccount[] = (data || []).map(account => ({
+        ...account,
+        status: account.status as WhatsAppAccount['status']
+      }));
+      setAccounts(typedAccounts);
     } catch (error) {
       console.error('Error in fetchAccounts:', error);
       toast({
@@ -65,7 +70,11 @@ export const useWhatsAppAccounts = () => {
       }
 
       console.log('Added account:', data);
-      setAccounts(prev => [data, ...prev]);
+      const typedAccount: WhatsAppAccount = {
+        ...data,
+        status: data.status as WhatsAppAccount['status']
+      };
+      setAccounts(prev => [typedAccount, ...prev]);
       
       toast({
         title: "Account Added",

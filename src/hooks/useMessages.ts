@@ -33,7 +33,13 @@ export const useMessages = () => {
       }
 
       console.log('Fetched messages:', data);
-      setMessages(data || []);
+      // Cast the data to match our interface
+      const typedMessages: Message[] = (data || []).map(message => ({
+        ...message,
+        status: message.status as Message['status'],
+        type: message.type as Message['type']
+      }));
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Error in fetchMessages:', error);
       toast({
@@ -71,7 +77,12 @@ export const useMessages = () => {
       }
 
       console.log('Message sent:', data);
-      setMessages(prev => [...prev, data]);
+      const typedMessage: Message = {
+        ...data,
+        status: data.status as Message['status'],
+        type: data.type as Message['type']
+      };
+      setMessages(prev => [...prev, typedMessage]);
 
       // Simulate delivery status update
       setTimeout(async () => {
@@ -92,7 +103,7 @@ export const useMessages = () => {
         description: "Your message has been sent successfully!"
       });
 
-      return data;
+      return typedMessage;
     } catch (error) {
       console.error('Error in sendMessage:', error);
       toast({
