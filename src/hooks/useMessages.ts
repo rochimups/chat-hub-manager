@@ -40,54 +40,6 @@ export const useMessages = () => {
         type: message.type as Message['type']
       }));
       setMessages(typedMessages);
-
-      // Set up real-time subscription for messages
-      const channel = supabase
-        .channel('messages_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages'
-          },
-          (payload) => {
-            console.log('Real-time message insert:', payload);
-            const newMessage: Message = {
-              ...payload.new,
-              status: payload.new.status as Message['status'],
-              type: payload.new.type as Message['type']
-            };
-            setMessages(prev => [...prev, newMessage]);
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'messages'
-          },
-          (payload) => {
-            console.log('Real-time message update:', payload);
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === payload.new.id
-                  ? {
-                      ...payload.new,
-                      status: payload.new.status as Message['status'],
-                      type: payload.new.type as Message['type']
-                    } as Message
-                  : msg
-              )
-            );
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     } catch (error) {
       console.error('Error in fetchMessages:', error);
       toast({
@@ -131,6 +83,9 @@ export const useMessages = () => {
         type: data.type as Message['type']
       };
 
+      // Add the new message to local state immediately
+      setMessages(prev => [...prev, typedMessage]);
+
       // Simulate delivery status update
       setTimeout(async () => {
         const { error: updateError } = await supabase
@@ -162,7 +117,64 @@ export const useMessages = () => {
   };
 
   useEffect(() => {
-    fetchMessages();
+    const initializeMessages = async () => {
+      await fetchMessages();
+
+      // Set up real-time subscription for messages
+      const channel = supabase
+        .channel('messages_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages'
+          },
+          (payload) => {
+            console.log('Real-time message insert:', payload);
+            const newMessage: Message = {
+              ...payload.new,
+              status: payload.new.status as Message['status'],
+              type: payload.new.type as Message['type']
+            };
+            // Only add if it's not already in the state (to prevent duplicates)
+            setMessages(prev => {
+              const exists = prev.find(m => m.id === newMessage.id);
+              if (exists) return prev;
+              return [...prev, newMessage];
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages'
+          },
+          (payload) => {
+            console.log('Real-time message update:', payload);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === payload.new.id
+                  ? {
+                      ...payload.new,
+                      status: payload.new.status as Message['status'],
+                      type: payload.new.type as Message['type']
+                    } as Message
+                  : msg
+              )
+            );
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    initializeMessages();
   }, []);
 
   return {
