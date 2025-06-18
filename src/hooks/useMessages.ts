@@ -40,6 +40,54 @@ export const useMessages = () => {
         type: message.type as Message['type']
       }));
       setMessages(typedMessages);
+
+      // Set up real-time subscription for messages
+      const channel = supabase
+        .channel('messages_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages'
+          },
+          (payload) => {
+            console.log('Real-time message insert:', payload);
+            const newMessage: Message = {
+              ...payload.new,
+              status: payload.new.status as Message['status'],
+              type: payload.new.type as Message['type']
+            };
+            setMessages(prev => [...prev, newMessage]);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages'
+          },
+          (payload) => {
+            console.log('Real-time message update:', payload);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === payload.new.id
+                  ? {
+                      ...payload.new,
+                      status: payload.new.status as Message['status'],
+                      type: payload.new.type as Message['type']
+                    } as Message
+                  : msg
+              )
+            );
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     } catch (error) {
       console.error('Error in fetchMessages:', error);
       toast({
@@ -82,7 +130,6 @@ export const useMessages = () => {
         status: data.status as Message['status'],
         type: data.type as Message['type']
       };
-      setMessages(prev => [...prev, typedMessage]);
 
       // Simulate delivery status update
       setTimeout(async () => {

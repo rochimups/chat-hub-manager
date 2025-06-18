@@ -33,6 +33,39 @@ export const useChatContacts = () => {
 
       console.log('Fetched contacts:', data);
       setContacts(data || []);
+
+      // Set up real-time subscription for contacts
+      const channel = supabase
+        .channel('chat_contacts_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'chat_contacts'
+          },
+          (payload) => {
+            console.log('Real-time contact change:', payload);
+            if (payload.eventType === 'INSERT') {
+              setContacts(prev => [payload.new as ChatContact, ...prev]);
+            } else if (payload.eventType === 'UPDATE') {
+              setContacts(prev =>
+                prev.map(contact =>
+                  contact.id === payload.new.id ? payload.new as ChatContact : contact
+                )
+              );
+            } else if (payload.eventType === 'DELETE') {
+              setContacts(prev =>
+                prev.filter(contact => contact.id !== payload.old.id)
+              );
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     } catch (error) {
       console.error('Error in fetchContacts:', error);
       toast({
@@ -75,6 +108,32 @@ export const useChatContacts = () => {
     }
   };
 
+  const markAsRead = async (contactId: string) => {
+    try {
+      console.log('Marking contact as read:', contactId);
+      const { error } = await supabase
+        .from('chat_contacts')
+        .update({ unread_count: 0 })
+        .eq('id', contactId);
+
+      if (error) {
+        console.error('Error marking contact as read:', error);
+        throw error;
+      }
+
+      // Update local state
+      setContacts(prev =>
+        prev.map(contact =>
+          contact.id === contactId
+            ? { ...contact, unread_count: 0 }
+            : contact
+        )
+      );
+    } catch (error) {
+      console.error('Error in markAsRead:', error);
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
   }, []);
@@ -83,6 +142,7 @@ export const useChatContacts = () => {
     contacts,
     loading,
     updateLastMessage,
+    markAsRead,
     refetch: fetchContacts
   };
 };

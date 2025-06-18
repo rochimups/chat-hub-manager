@@ -17,7 +17,7 @@ import { useChatContacts } from '@/hooks/useChatContacts';
 const Index = () => {
   const { accounts, loading: accountsLoading, addAccount, removeAccount, generateQR } = useWhatsAppAccounts();
   const { messages, loading: messagesLoading, sendMessage } = useMessages();
-  const { contacts, loading: contactsLoading, updateLastMessage } = useChatContacts();
+  const { contacts, loading: contactsLoading, updateLastMessage, markAsRead } = useChatContacts();
 
   const [activeAccount, setActiveAccount] = useState<WhatsAppAccount | null>(null);
   const [activeTab, setActiveTab] = useState('chat');
@@ -53,6 +53,16 @@ const Index = () => {
     console.log('Selecting account:', account);
     setActiveAccount(account);
     setSelectedChat(null); // Reset selected chat when switching accounts
+  };
+
+  const handleChatSelect = async (contact: any) => {
+    console.log('Selecting chat:', contact);
+    setSelectedChat(contact);
+    
+    // Mark as read if there are unread messages
+    if (contact.unread_count > 0) {
+      await markAsRead(contact.id);
+    }
   };
 
   const handleAddAccount = async (name: string) => {
@@ -210,7 +220,7 @@ const Index = () => {
                     filteredContacts.map((contact) => (
                       <div
                         key={contact.id}
-                        onClick={() => setSelectedChat(contact)}
+                        onClick={() => handleChatSelect(contact)}
                         className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
                           selectedChat?.id === contact.id ? 'bg-green-50 border-l-4 border-l-green-500' : ''
                         }`}
