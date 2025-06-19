@@ -106,7 +106,7 @@ export function AppSidebar({
                   <SidebarMenuButton 
                     isActive={activeView === item.value}
                     onClick={() => onViewChange(item.value)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors min-h-[60px] ${
                       activeView === item.value
                         ? 'bg-gray-100 text-gray-900'
                         : 'hover:bg-gray-50 text-gray-600'
@@ -114,8 +114,8 @@ export function AppSidebar({
                   >
                     <item.icon className="w-4 h-4" />
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">{item.title}</span>
-                      <span className="text-xs text-gray-400">{item.description}</span>
+                      <span className="font-medium leading-tight">{item.title}</span>
+                      <span className="text-xs text-gray-400 leading-tight">{item.description}</span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -148,7 +148,7 @@ export function AppSidebar({
                         onAccountSelect(account);
                         onViewChange('chat');
                       }}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      className={`flex items-center gap-3 px-3 py-4 rounded-lg transition-colors min-h-[70px] ${
                         activeAccount?.id === account.id
                           ? 'bg-gray-100 border border-gray-200'
                           : 'hover:bg-gray-50'
@@ -159,15 +159,15 @@ export function AppSidebar({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium text-sm text-gray-900 truncate">
+                          <p className="font-medium text-sm text-gray-900 truncate leading-tight">
                             {account.name}
                           </p>
                           <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
                             {getStatusIcon(account.status)}
-                            <span>{getStatusText(account.status)}</span>
+                            <span className="leading-none">{getStatusText(account.status)}</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs text-gray-500 truncate leading-tight">
                           {account.phone_number || 'Waiting for connection...'}
                         </p>
                       </div>
