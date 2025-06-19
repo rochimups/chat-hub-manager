@@ -8,11 +8,12 @@ export interface Message {
   account_id: number;
   user_id: string;
   to_phone: string;
-  from_phone?: string;
+  from_phone: string;
   message: string;
-  timestamp: string;
-  status: 'sent' | 'delivered' | 'failed';
+  status: 'sent' | 'delivered' | 'read' | 'failed';
   type: 'sent' | 'received';
+  timestamp: string;
+  created_at: string;
 }
 
 export const useMessages = () => {
@@ -33,11 +34,10 @@ export const useMessages = () => {
       }
 
       console.log('Fetched messages:', data);
-      // Cast the data to match our interface
-      const typedMessages: Message[] = (data || []).map(message => ({
-        ...message,
-        status: message.status as Message['status'],
-        type: message.type as Message['type']
+      const typedMessages: Message[] = (data || []).map(msg => ({
+        ...msg,
+        status: msg.status as Message['status'],
+        type: msg.type as Message['type']
       }));
       setMessages(typedMessages);
     } catch (error) {
@@ -52,22 +52,28 @@ export const useMessages = () => {
     }
   };
 
-  const sendMessage = async (accountId: number, toPhone: string, fromPhone: string, messageText: string) => {
+  const sendMessage = async (
+    accountId: number,
+    toPhone: string,
+    fromPhone: string,
+    messageText: string
+  ) => {
     try {
       console.log('Sending message:', { accountId, toPhone, fromPhone, messageText });
+      
+      const newMessage = {
+        account_id: accountId,
+        user_id: 'user-1',
+        to_phone: toPhone,
+        from_phone: fromPhone,
+        message: messageText,
+        status: 'sent' as const,
+        type: 'sent' as const
+      };
+
       const { data, error } = await supabase
         .from('messages')
-        .insert([
-          {
-            account_id: accountId,
-            user_id: 'user1',
-            to_phone: toPhone,
-            from_phone: fromPhone,
-            message: messageText,
-            status: 'sent',
-            type: 'sent'
-          }
-        ])
+        .insert([newMessage])
         .select()
         .single();
 
@@ -77,16 +83,16 @@ export const useMessages = () => {
       }
 
       console.log('Message sent:', data);
+      
+      // Add to local state
       const typedMessage: Message = {
         ...data,
         status: data.status as Message['status'],
         type: data.type as Message['type']
       };
-
-      // Add the new message to local state immediately
       setMessages(prev => [...prev, typedMessage]);
 
-      // Simulate delivery status update
+      // Simulate delivery after 2 seconds
       setTimeout(async () => {
         const { error: updateError } = await supabase
           .from('messages')
@@ -94,16 +100,13 @@ export const useMessages = () => {
           .eq('id', data.id);
 
         if (!updateError) {
-          setMessages(prev => 
-            prev.map(m => m.id === data.id ? { ...m, status: 'delivered' as const } : m)
-          );
+          setMessages(prev => prev.map(msg => 
+            msg.id === data.id 
+              ? { ...msg, status: 'delivered' as const }
+              : msg
+          ));
         }
       }, 2000);
-
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent successfully!"
-      });
 
       return typedMessage;
     } catch (error) {
@@ -113,68 +116,49 @@ export const useMessages = () => {
         description: "Failed to send message",
         variant: "destructive"
       });
+      return null;
     }
   };
 
   useEffect(() => {
-    const initializeMessages = async () => {
-      await fetchMessages();
+    fetchMessages();
 
-      // Set up real-time subscription for messages
-      const channel = supabase
-        .channel('messages_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages'
-          },
-          (payload) => {
-            console.log('Real-time message insert:', payload);
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('messages_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          console.log('Real-time message update:', payload);
+          if (payload.eventType === 'INSERT') {
             const newMessage: Message = {
-              ...payload.new,
+              ...payload.new as any,
               status: payload.new.status as Message['status'],
               type: payload.new.type as Message['type']
             };
-            // Only add if it's not already in the state (to prevent duplicates)
-            setMessages(prev => {
-              const exists = prev.find(m => m.id === newMessage.id);
-              if (exists) return prev;
-              return [...prev, newMessage];
-            });
+            setMessages(prev => [...prev, newMessage]);
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedMessage: Message = {
+              ...payload.new as any,
+              status: payload.new.status as Message['status'],
+              type: payload.new.type as Message['type']
+            };
+            setMessages(prev => prev.map(msg => 
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            ));
           }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'messages'
-          },
-          (payload) => {
-            console.log('Real-time message update:', payload);
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === payload.new.id
-                  ? {
-                      ...payload.new,
-                      status: payload.new.status as Message['status'],
-                      type: payload.new.type as Message['type']
-                    } as Message
-                  : msg
-              )
-            );
-          }
-        )
-        .subscribe();
+        }
+      )
+      .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+    return () => {
+      supabase.removeChannel(channel);
     };
-
-    initializeMessages();
   }, []);
 
   return {
