@@ -17,7 +17,7 @@ const Index = () => {
   const { contacts, loading: contactsLoading, updateLastMessage, markAsRead } = useChatContacts();
 
   const [activeAccount, setActiveAccount] = useState<WhatsAppAccount | null>(null);
-  const [activeView, setActiveView] = useState('chat');
+  const [activeView, setActiveView] = useState('accounts'); // Default to accounts view
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
