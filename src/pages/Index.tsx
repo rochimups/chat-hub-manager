@@ -66,16 +66,6 @@ const Index = () => {
     await addAccount(name);
   };
 
-  const handleQuickAddAccount = () => {
-    // Quick add account functionality for sidebar button
-    const accountName = `Account ${accounts.length + 1}`;
-    handleAddAccount(accountName);
-    toast({
-      title: "Account Added",
-      description: `${accountName} has been created. Set it up in Account Management.`
-    });
-  };
-
   const handleRemoveAccount = async (accountId: number) => {
     await removeAccount(accountId);
     if (activeAccount?.id === accountId) {
@@ -129,7 +119,9 @@ const Index = () => {
         <AppSidebar 
           activeView={activeView}
           onViewChange={setActiveView}
-          onAddAccount={handleQuickAddAccount}
+          accounts={accounts}
+          activeAccount={activeAccount}
+          onAccountSelect={handleAccountSelect}
         />
         
         <SidebarInset>
