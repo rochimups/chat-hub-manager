@@ -29,13 +29,13 @@ const menuItems = [
     title: "Account Management",
     value: "accounts",
     icon: Users,
-    description: "Manage your WhatsApp accounts"
+    description: "Manage your WhatsApp"
   },
   {
     title: "Settings",
-    value: "settings",
+    value: "settings", 
     icon: Settings,
-    description: "Configure application settings"
+    description: "Configure application"
   },
 ];
 
@@ -54,18 +54,33 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'connected':
+      return 'Connected';
+    case 'disconnected':
+    case 'not_connected':
+      return 'Disconnected';
+    case 'pending':
+    case 'scanning':
+      return 'Pending';
+    default:
+      return 'Unknown';
+  }
+};
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'connected':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'text-green-600 bg-green-50';
     case 'disconnected':
     case 'not_connected':
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'text-red-600 bg-red-50';
     case 'pending':
     case 'scanning':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'text-yellow-600 bg-yellow-50';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'text-gray-600 bg-gray-50';
   }
 };
 
@@ -77,49 +92,30 @@ export function AppSidebar({
   onAccountSelect 
 }: AppSidebarProps) {
   return (
-    <Sidebar className="border-r border-gray-200">
-      <SidebarHeader className="p-6 bg-gradient-to-r from-green-500 to-green-600">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-            <Smartphone className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="font-bold text-xl text-white">WhatsApp Manager</h2>
-            <p className="text-sm text-green-100">Multi-Account Dashboard</p>
-          </div>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent className="bg-gray-50/50">
-        <SidebarGroup className="px-4 py-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Management
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarContent className="bg-white">
+        {/* Management Section */}
+        <SidebarGroup className="px-3 py-4">
+          <SidebarGroupLabel className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-2">
+            MANAGEMENT
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.value}>
                   <SidebarMenuButton 
                     isActive={activeView === item.value}
                     onClick={() => onViewChange(item.value)}
-                    className={`group relative p-3 rounded-xl transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                       activeView === item.value
-                        ? 'bg-white shadow-md border border-gray-200 text-gray-900'
-                        : 'hover:bg-white/70 hover:shadow-sm text-gray-700'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'hover:bg-gray-50 text-gray-600'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg transition-colors ${
-                        activeView === item.value
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-gray-100 text-gray-500 group-hover:bg-green-50 group-hover:text-green-600'
-                      }`}>
-                        <item.icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-medium text-sm">{item.title}</span>
-                        <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
-                      </div>
+                    <item.icon className="w-4 h-4" />
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{item.title}</span>
+                      <span className="text-xs text-gray-400">{item.description}</span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -128,19 +124,20 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="px-4 pb-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            WhatsApp Accounts ({accounts.length})
+        {/* WhatsApp Accounts Section */}
+        <SidebarGroup className="px-3 pb-4">
+          <SidebarGroupLabel className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-2">
+            WHATSAPP ACCOUNTS ({accounts.length})
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               {accounts.length === 0 ? (
-                <div className="p-4 text-center bg-white rounded-xl border border-gray-200">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Smartphone className="w-6 h-6 text-gray-400" />
+                <div className="px-3 py-6 text-center">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Smartphone className="w-5 h-5 text-gray-400" />
                   </div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">No accounts yet</p>
-                  <p className="text-xs text-gray-500">Add your first WhatsApp account to get started</p>
+                  <p className="text-sm text-gray-500 mb-1">No accounts yet</p>
+                  <p className="text-xs text-gray-400">Add your first account</p>
                 </div>
               ) : (
                 accounts.map((account) => (
@@ -151,34 +148,28 @@ export function AppSidebar({
                         onAccountSelect(account);
                         onViewChange('chat');
                       }}
-                      className={`group p-4 rounded-xl transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                         activeAccount?.id === account.id
-                          ? 'bg-white shadow-md border border-green-200 ring-1 ring-green-100'
-                          : 'bg-white/60 hover:bg-white hover:shadow-sm border border-gray-100'
+                          ? 'bg-gray-100 border border-gray-200'
+                          : 'hover:bg-gray-50'
                       }`}
                     >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-                          activeAccount?.id === account.id
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 text-gray-600 group-hover:bg-green-100 group-hover:text-green-600'
-                        }`}>
-                          <Smartphone className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="font-medium text-sm text-gray-900 truncate">{account.name}</p>
-                            <Badge className={`${getStatusColor(account.status)} text-xs px-2 py-0.5 border`}>
-                              <div className="flex items-center gap-1">
-                                {getStatusIcon(account.status)}
-                                <span className="capitalize text-xs">{account.status.replace('_', ' ')}</span>
-                              </div>
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-gray-500 truncate">
-                            {account.phone_number || 'Waiting for connection...'}
+                      <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Smartphone className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-medium text-sm text-gray-900 truncate">
+                            {account.name}
                           </p>
+                          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
+                            {getStatusIcon(account.status)}
+                            <span>{getStatusText(account.status)}</span>
+                          </div>
                         </div>
+                        <p className="text-xs text-gray-500 truncate">
+                          {account.phone_number || 'Waiting for connection...'}
+                        </p>
                       </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -188,16 +179,6 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="p-4 bg-gray-50 border-t border-gray-200">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-xs font-medium text-gray-600">WhatsApp Multi-Manager</p>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">Version 1.0.0</p>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }
