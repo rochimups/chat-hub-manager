@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
-import { MessageSquare, Send, Search, Phone, Video, MoreVertical, CheckCircle } from "lucide-react";
+import { MessageSquare, Send, Search, Phone, Video, MoreVertical, CheckCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { Smartphone } from "lucide-react";
 import AccountSelector from '@/components/AccountSelector';
 import { WhatsAppAccount } from '@/hooks/useWhatsAppAccounts';
@@ -42,14 +41,46 @@ export const ChatView: React.FC<ChatViewProps> = ({
   setSearchTerm
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollButtons, setShowScrollButtons] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const scrollUp = () => {
+    if (messagesScrollRef.current) {
+      messagesScrollRef.current.scrollBy({ top: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollDown = () => {
+    if (messagesScrollRef.current) {
+      messagesScrollRef.current.scrollBy({ top: 300, behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (messagesScrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesScrollRef.current;
+      const isScrollable = scrollHeight > clientHeight;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      setShowScrollButtons(isScrollable && !isNearBottom);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const scrollElement = messagesScrollRef.current;
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      handleScroll(); // Check initial state
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [selectedChat]);
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -177,9 +208,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 </div>
               </div>
 
-              {/* Messages Area - using ScrollArea for better scrolling */}
+              {/* Messages Area with Custom Scroll */}
               <div className="flex-1 bg-gray-50 relative">
-                <ScrollArea className="h-full pb-20">
+                <div 
+                  ref={messagesScrollRef}
+                  className="h-full overflow-y-auto pb-20 scroll-smooth"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
                   <div className="p-4 space-y-4">
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 py-8">
@@ -221,7 +256,29 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     )}
                     <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
+
+                {/* Scroll Navigation Buttons */}
+                {showScrollButtons && (
+                  <div className="absolute right-4 bottom-24 flex flex-col gap-2 z-20">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={scrollUp}
+                      className="bg-white shadow-lg hover:bg-gray-50 rounded-full w-8 h-8"
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={scrollDown}
+                      className="bg-white shadow-lg hover:bg-gray-50 rounded-full w-8 h-8"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Floating Message Input */}
