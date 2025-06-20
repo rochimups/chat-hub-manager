@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
   searchTerm,
   setSearchTerm
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   };
@@ -135,7 +145,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col relative">
           {selectedChat && activeAccount ? (
             <>
               {/* Chat Header */}
@@ -166,8 +176,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 </div>
               </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+              {/* Messages Area - with bottom padding to prevent overlap with floating input */}
+              <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pb-24">
                 <div className="space-y-4">
                   {messages.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
@@ -207,11 +217,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
                       </div>
                     ))
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
               </div>
 
-              {/* Message Input */}
-              <div className="bg-white border-t border-gray-200 p-4">
+              {/* Floating Message Input */}
+              <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
                 <div className="flex items-end gap-3">
                   <div className="flex-1">
                     <Textarea
@@ -225,13 +236,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
                         }
                       }}
                       rows={1}
-                      className="resize-none"
+                      className="resize-none max-h-32"
                     />
                   </div>
                   <Button 
                     onClick={onSendMessage}
                     disabled={!newMessage.trim() || activeAccount?.status !== 'connected'}
-                    className="bg-green-500 hover:bg-green-600"
+                    className="bg-green-500 hover:bg-green-600 flex-shrink-0"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
