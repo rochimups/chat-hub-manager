@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { Users, Send, CheckCircle } from "lucide-react";
@@ -10,6 +9,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { useWhatsAppAccounts, WhatsAppAccount } from '@/hooks/useWhatsAppAccounts';
 import { useMessages } from '@/hooks/useMessages';
 import { useChatContacts } from '@/hooks/useChatContacts';
+import { AddonView } from '@/components/AddonView';
 
 const Index = () => {
   const { accounts, loading: accountsLoading, addAccount, removeAccount, generateQR } = useWhatsAppAccounts();
@@ -133,6 +133,7 @@ const Index = () => {
                 <h1 className="text-2xl font-bold text-gray-800">
                   {activeView === 'chat' && 'Live Chat'}
                   {activeView === 'accounts' && 'Account Management'}
+                  {activeView === 'addon' && 'Addon Management'}
                   {activeView === 'settings' && 'Settings'}
                 </h1>
               </div>
@@ -193,6 +194,10 @@ const Index = () => {
                   onRemoveAccount={handleRemoveAccount}
                   onGenerateQR={handleGenerateQR}
                 />
+              )}
+
+              {activeView === 'addon' && (
+                <AddonView accounts={accounts} />
               )}
 
               {activeView === 'settings' && (
