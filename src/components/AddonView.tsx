@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit, Plus, Webhook, ExternalLink } from "lucide-react";
+import { Trash2, Edit, Plus, Webhook as WebhookIcon, ExternalLink } from "lucide-react";
 import { useWebhooks, Webhook } from '@/hooks/useWebhooks';
 import { WhatsAppAccount } from '@/hooks/useWhatsAppAccounts';
 
@@ -204,7 +204,7 @@ export const AddonView: React.FC<AddonViewProps> = ({ accounts }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Webhook className="w-5 h-5" />
+            <WebhookIcon className="w-5 h-5" />
             Webhooks
           </CardTitle>
           <CardDescription>
@@ -214,7 +214,7 @@ export const AddonView: React.FC<AddonViewProps> = ({ accounts }) => {
         <CardContent>
           {webhooks.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <Webhook className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <WebhookIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No webhooks configured yet</p>
               <p className="text-sm">Add your first webhook to get started</p>
             </div>
@@ -254,7 +254,6 @@ export const AddonView: React.FC<AddonViewProps> = ({ accounts }) => {
                         <Switch
                           checked={webhook.is_active}
                           onCheckedChange={(checked) => toggleWebhook(webhook.id, checked)}
-                          size="sm"
                         />
                       </div>
                     </TableCell>
